@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>AIGO Testing</title>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, user-scalable=no"
+    />
+    <link rel="stylesheet" href="assets/css/main.css" />
+    <link rel="stylesheet" href="assets/css/type-writer.css" />
+    <noscript
+      ><link rel="stylesheet" href="assets/css/noscript.css"
+    /></noscript>
+  </head>
+  <body class="is-preload">
+    <!-- Page Wrapper -->
+    <div id="page-wrapper">
+      <!-- Header -->
+      <header id="header" class="alt">
+        <h1><a href="/">AIGO Test</a></h1>
+      </header>
+
+      <!-- Banner -->
+      <section id="banner">
+        <div class="inner">
+          <div class="logo"><span class="icon fa-gem"></span></div>
+          <h2>AIGO Test Website</h2>
+          <p>Are you ready to test it?</p>
+        </div>
+      </section>
+
+      <!-- Wrapper -->
+      <section id="wrapper">
+        <section id="four" class="wrapper alt style1">
+          <div class="inner">
+            <h2 class="major">Record Here</h2>
+            <div class="chat">
+              <div id="typedtext"></div>
+            </div>
+            <ul class="actions" style="padding-top: 20px">
+              <li>
+                <a class="button" id="start-btn">Start Recording</a>
+              </li>
+              <li>
+                <a class="button" id="stop-btn">Stop Recording</a>
+              </li>
+              <li>
+                <audio controls></audio>
+              </li>
+            </ul>
+          </div>
+        </section>
+      </section>
+
+      <!-- Footer -->
+      <section id="footer"></section>
+    </div>
+
+    <!-- Scripts -->
+    <script src="assets/js/jquery.min.js"></script>
+    <script src="assets/js/jquery.scrollex.min.js"></script>
+    <script src="assets/js/browser.min.js"></script>
+    <script src="assets/js/breakpoints.min.js"></script>
+    <script src="assets/js/util.js"></script>
+    <script src="assets/js/main.js"></script>
+    <script type="module">
+      import { io } from 'https://cdn.socket.io/4.4.1/socket.io.esm.min.js';
+      const startBtn = document.querySelector('#start-btn');
+      const stopBtn = document.querySelector('#stop-btn');
+      const audioElement = document.querySelector('audio');
+      const socket = io('http://192.168.0.108:3000/socket');
+
+      const chat = document.querySelector('.chat');
+
+      const label = 'Operation took';
+
+      navigator.mediaDevices
+        .getUserMedia({
+          audio: true,
+        })
+        .then((stream) => {
+          const mediaRecorder = new MediaRecorder(stream);
+
+          mediaRecorder.ondataavailable = (event) => {
+            if (socket.connected) {
+              console.log(event.data);
+              socket.emit('stream-voice', event.data);
+            }
+          };
+
+          startBtn.addEventListener('click', async () => {
+            if (mediaRecorder.state === 'recording') return;
+            mediaRecorder.start();
+            console.log('started recording');
+          });
+
+          stopBtn.addEventListener('click', async () => {
+            mediaRecorder.stop();
+            setTimeout(() => {
+              audioElement.src = 'sure.mp3';
+              audioElement.play();
+            }, 500);
+            console.log('stopped recording');
+            console.time(label);
+          });
+        });
+
+      stopBtn.addEventListener('click', () => {});
+
+      socket.on('connect', () => {
+        socket.on('text', (speech, answer) => {
+          const element = document.createElement('div');
+          chat.appendChild(element);
+          write(element, [answer]);
+          const blob = new Blob([speech], { type: 'audio/mp3' });
+          const url = window.URL.createObjectURL(blob);
+          audioElement.src = url;
+          audioElement.play();
+          console.timeEnd(label);
+        });
+      });
+
+      function write(element, messages) {
+        // set up text to print, each item in array is new line
+        var aText = messages;
+        var iSpeed = 50; // time delay of print out
+        var iIndex = 0; // start printing array at this posision
+        var iArrLength = aText[0].length; // the length of the text array
+        var iScrollAt = 20; // start scrolling up at this many lines
+
+        var iTextPos = 0; // initialise text position
+        var sContents = ''; // initialise contents variable
+        var iRow; // initialise current row
+
+        function typewriter(element) {
+          sContents = ' ';
+          iRow = Math.max(0, iIndex - iScrollAt);
+          var destination = element;
+
+          while (iRow < iIndex) {
+            sContents += aText[iRow++] + '<br />';
+          }
+          destination.innerHTML =
+            sContents + aText[iIndex].substring(0, iTextPos) + '_';
+          if (iTextPos++ == iArrLength) {
+            iTextPos = 0;
+            iIndex++;
+            if (iIndex != aText.length) {
+              iArrLength = aText[iIndex].length;
+              setTimeout(() => {
+                typewriter(element);
+              }, 500);
+            }
+          } else {
+            setTimeout(() => {
+              typewriter(element);
+            }, iSpeed);
+          }
+        }
+        typewriter(element);
+      }
+      write(document.querySelector('#typedtext'), [
+        'Hello, How I can help you today?',
+      ]);
+    </script>
+  </body>
+</html>

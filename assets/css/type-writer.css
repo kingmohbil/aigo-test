@@ -1,0 +1,17 @@
+.chat {
+  padding: 10px;
+  border: 1px solid;
+  -moz-appearance: none;
+  -webkit-appearance: none;
+  -ms-appearance: none;
+  appearance: none;
+  background: rgba(255, 255, 255, 0.025);
+  border-radius: 5px;
+  border: none;
+  border: solid 2px rgba(255, 255, 255, 0.125);
+  color: inherit;
+  display: block;
+  outline: 0;
+  text-decoration: none;
+  width: 100%;
+}
