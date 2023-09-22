@@ -69,7 +69,9 @@
       const startBtn = document.querySelector('#start-btn');
       const stopBtn = document.querySelector('#stop-btn');
       const audioElement = document.querySelector('audio');
-      const socket = io('https://aigo-server.com');
+      const socket = io('wss://aigo-server.com');
+
+      socket.on('connect', () => console.log('connected'));
 
       const chat = document.querySelector('.chat');
 
@@ -125,13 +127,13 @@
         // set up text to print, each item in array is new line
         var aText = messages;
         var iSpeed = 50; // time delay of print out
-        var iIndex = 0; // start printing array at this posision
+        var iIndex = 0; // start printing array at this position
         var iArrLength = aText[0].length; // the length of the text array
         var iScrollAt = 20; // start scrolling up at this many lines
 
-        var iTextPos = 0; // initialise text position
-        var sContents = ''; // initialise contents variable
-        var iRow; // initialise current row
+        var iTextPos = 0; // initialize text position
+        var sContents = ''; // initialize contents variable
+        var iRow; // initialize current row
 
         function typewriter(element) {
           sContents = ' ';
