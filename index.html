@@ -49,6 +49,16 @@
                 <audio controls></audio>
               </li>
             </ul>
+            <div>
+              <select name="language" id="language">
+                <option value="0">EN</option>
+                <option value="1">AR</option>
+                <option value="2">FR</option>
+                <option value="3">IT</option>
+                <option value="4">ES</option>
+                <option value="5">RU</option>
+              </select>
+            </div>
           </div>
         </section>
       </section>
@@ -70,6 +80,21 @@
       const stopBtn = document.querySelector('#stop-btn');
       const audioElement = document.querySelector('audio');
       const socket = io('wss://aigo-server.com');
+      const languageSelect = document.getElementById('language');
+
+      const languageCodes = [
+        { speech: 'en-US', text: 'en-US' },
+        { speech: 'ar-XA', text: 'ar-XA' },
+        { speech: 'fr', text: 'fr-FR' },
+        { speech: 'it', text: 'it-IT' },
+        { speech: 'es', text: 'es-ES' },
+        { speech: 'ru', text: 'ru-RU' },
+      ];
+
+      let lang = languageCodes[0];
+
+      languageSelect.onchange = (e) =>
+        (lang = languageCodes[parseInt(e.target.value)]);
 
       socket.on('connect', () => console.log('connected'));
 
@@ -87,7 +112,7 @@
           mediaRecorder.ondataavailable = (event) => {
             if (socket.connected) {
               console.log(event.data);
-              socket.emit('stream-voice', event.data);
+              socket.emit('stream-voice', event.data, lang);
             }
           };
 
@@ -111,7 +136,9 @@
       stopBtn.addEventListener('click', () => {});
 
       socket.on('connect', () => {
-        socket.on('text', (speech, answer) => {
+        socket.on('text', (speech, answer, question) => {
+          console.log(question);
+          console.time(answer);
           const element = document.createElement('div');
           chat.appendChild(element);
           write(element, [answer]);
