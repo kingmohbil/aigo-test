@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>AIGO Testing</title>
+    <title>Echo-Talk</title>
     <meta charset="utf-8" />
     <meta
       name="viewport"
@@ -18,14 +18,14 @@
     <div id="page-wrapper">
       <!-- Header -->
       <header id="header" class="alt">
-        <h1><a href="/">AIGO Test</a></h1>
+        <h1><a href="/">Echo-Talk</a></h1>
       </header>
 
       <!-- Banner -->
       <section id="banner">
         <div class="inner">
           <div class="logo"><span class="icon fa-gem"></span></div>
-          <h2>AIGO Test Website</h2>
+          <h2>Echo-Talk Test Website</h2>
           <p>Are you ready to test it?</p>
         </div>
       </section>
@@ -75,11 +75,12 @@
     <script src="assets/js/util.js"></script>
     <script src="assets/js/main.js"></script>
     <script type="module">
+      const host = 'localhost:3000';
       import { io } from 'https://cdn.socket.io/4.4.1/socket.io.esm.min.js';
       const startBtn = document.querySelector('#start-btn');
       const stopBtn = document.querySelector('#stop-btn');
       const audioElement = document.querySelector('audio');
-      const socket = io('wss://aigo-server.com');
+      const socket = io(`ws://${host}`);
       const languageSelect = document.getElementById('language');
 
       const languageCodes = [
@@ -91,10 +92,14 @@
         { speech: 'ru', text: 'ru-RU' },
       ];
 
+      let currentLanguage = 0;
+
       let lang = languageCodes[0];
 
-      languageSelect.onchange = (e) =>
-        (lang = languageCodes[parseInt(e.target.value)]);
+      languageSelect.onchange = (e) => {
+        lang = languageCodes[parseInt(e.target.value)];
+        if (socket.connected) socket.emit('change-language', e.target.value);
+      };
 
       socket.on('connect', () => console.log('connected'));
 
@@ -112,7 +117,7 @@
           mediaRecorder.ondataavailable = (event) => {
             if (socket.connected) {
               console.log(event.data);
-              socket.emit('stream-voice', event.data, lang);
+              socket.emit('stream-voice', event.data);
             }
           };
 
